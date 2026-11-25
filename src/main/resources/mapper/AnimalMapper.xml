@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.animal.mapper.AnimalMapper">
+    <sql id="columns">animal_id, animal_name, type, color, location, status, photo_url, remark, is_approved, create_user, create_time, gender, health</sql>
+    <sql id="filters">
+        <where>
+            <if test="type != null and !type.isBlank()">AND type = #{type}</if>
+            <if test="status != null and !status.isBlank()">AND status = #{status}</if>
+            <if test="location != null and !location.isBlank()">AND location LIKE CONCAT('%', #{location}, '%')</if>
+            <if test="approvedOnly">AND is_approved = 1</if>
+        </where>
+    </sql>
+    <select id="findById" resultType="com.campus.animal.entity.Animal">
+        SELECT <include refid="columns"/> FROM animal WHERE animal_id = #{id}
+    </select>
+    <select id="lockById" resultType="com.campus.animal.entity.Animal">
+        SELECT <include refid="columns"/> FROM animal WHERE animal_id = #{id} FOR UPDATE
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="animalId" keyColumn="animal_id">
+        INSERT INTO animal (animal_name, type, color, location, status, photo_url, remark, is_approved, create_user, create_time, gender, health)
+        VALUES (#{animalName}, #{type}, #{color}, #{location}, #{status}, #{photoUrl}, #{remark}, #{isApproved}, #{createUser}, #{createTime}, #{gender}, #{health})
+    </insert>
+    <update id="update">
+        UPDATE animal
+        SET animal_name = #{animalName}, type = #{type}, color = #{color}, location = #{location}, status = #{status}, photo_url = #{photoUrl}, remark = #{remark}, is_approved = #{isApproved}
+        WHERE animal_id = #{animalId}
+    </update>
+    <delete id="deleteById">DELETE FROM animal WHERE animal_id = #{id}</delete>
+    <select id="existsById" resultType="boolean">SELECT EXISTS(SELECT 1 FROM animal WHERE animal_id = #{id})</select>
+    <select id="findPage" resultType="com.campus.animal.entity.Animal">
+        SELECT <include refid="columns"/> FROM animal <include refid="filters"/>
+        ORDER BY create_time DESC, animal_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countFiltered" resultType="long">
+        SELECT COUNT(*) FROM animal <include refid="filters"/>
+    </select>
+    <select id="count" resultType="long">SELECT COUNT(*) FROM animal</select>
+    <select id="countByStatus" resultType="long">SELECT COUNT(*) FROM animal WHERE status = #{value}</select>
+</mapper>

@@ -1,0 +1,9 @@
+/target/
+/static/uploads/
+/uploads/
+.env
+application-local.yml
+*.log
+.idea/
+.vscode/
+*.iml

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.animal.mapper.AdminMapper">
+    <select id="stats" resultType="map">
+        SELECT
+            (SELECT COUNT(*) FROM animal) AS animalTotal,
+            (SELECT COUNT(*) FROM animal WHERE is_approved = 0) AS animalPending,
+            (SELECT COUNT(*) FROM rescue_order) AS rescueTotal,
+            (SELECT COUNT(*) FROM rescue_order WHERE order_status = '待处理') AS rescuePending,
+            (SELECT COUNT(*) FROM adoption WHERE status = '待审核') AS adoptionPending,
+            (SELECT COUNT(*) FROM `user`) AS userTotal,
+            (SELECT COUNT(*) FROM feed_record) AS feedTotal,
+            (SELECT COUNT(*) FROM feed_point) AS pointTotal
+    </select>
+    <select id="animals" resultType="map">
+        SELECT a.*, CAST(a.is_approved AS UNSIGNED) AS approval_number, u.nickname AS creator_name
+        FROM animal a LEFT JOIN `user` u ON a.create_user = u.user_id
+        <if test="approved != null">WHERE a.is_approved = #{approved}</if>
+        ORDER BY a.create_time DESC, a.animal_id DESC
+    </select>
+    <update id="updateAnimal">
+        UPDATE animal SET animal_name = #{animalName}, type = #{type}, color = #{color},
+          gender = #{gender}, location = #{location}, health = #{health}, remark = #{remark}
+        WHERE animal_id = #{animalId}
+    </update>
+    <select id="rescues" resultType="map">
+        SELECT r.*, a.animal_name, a.type AS animal_type,
+               pu.nickname AS publisher_name, du.nickname AS dealer_name
+        FROM rescue_order r
+        LEFT JOIN animal a ON r.animal_id = a.animal_id
+        LEFT JOIN `user` pu ON r.publish_user = pu.user_id
+        LEFT JOIN `user` du ON r.deal_user = du.user_id
+        <where>
+            <choose>
+                <when test='status == "处理中"'>r.order_status IN ('处理中', '救助中')</when>
+                <when test="status != null">r.order_status = #{status}</when>
+            </choose>
+        </where>
+        ORDER BY r.create_time DESC, r.rescue_id DESC
+    </select>
+    <select id="adoptions" resultType="map">
+        SELECT ad.*, a.animal_name, a.type AS animal_type,
+               ap.nickname AS applicant_name, rv.nickname AS reviewer_name
+        FROM adoption ad
+        LEFT JOIN animal a ON ad.animal_id = a.animal_id
+        LEFT JOIN `user` ap ON ad.applicant_id = ap.user_id
+        LEFT JOIN `user` rv ON ad.review_user_id = rv.user_id
+        <if test="status != null">WHERE ad.status = #{status}</if>
+        ORDER BY ad.apply_time DESC, ad.id DESC
+    </select>
+    <select id="feedPoints" resultType="map">
+        SELECT fp.*, u.nickname AS updater_name FROM feed_point fp
+        LEFT JOIN `user` u ON fp.last_update_user = u.user_id ORDER BY fp.point_id
+    </select>
+    <update id="updateFeedPoint">
+        UPDATE feed_point SET point_name = #{pointName}, location = #{location}, food_status = #{foodStatus},
+          last_update_user = #{lastUpdateUser}, update_time = #{updateTime}
+        WHERE point_id = #{pointId}
+    </update>
+    <select id="users" resultType="map">
+        SELECT user_id, username, nickname, phone, role, love_points, create_time FROM `user` ORDER BY user_id
+    </select>
+    <delete id="deleteUser">DELETE FROM `user` WHERE user_id = #{id}</delete>
+    <select id="feedRecords" resultType="map">
+        SELECT fr.*, u.nickname AS user_name, fp.point_name FROM feed_record fr
+        LEFT JOIN `user` u ON fr.user_id = u.user_id
+        LEFT JOIN feed_point fp ON fr.point_id = fp.point_id
+        ORDER BY fr.feed_time DESC, fr.record_id DESC LIMIT 200
+    </select>
+    <select id="volunteers" resultType="map">
+        SELECT user_id, username, nickname, phone FROM `user` WHERE role IN ('admin', 'volunteer') ORDER BY user_id
+    </select>
+</mapper>

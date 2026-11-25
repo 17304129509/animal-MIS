@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.animal.mapper.RescueOrderMapper">
+    <sql id="columns">rescue_id, animal_id, publish_user, rescue_content, location, order_status, deal_user, result, create_time, urgency</sql>
+    <sql id="filters">
+        <where>
+            <choose>
+                <when test='orderStatus == "救助中" or orderStatus == "处理中"'>
+                    AND order_status IN ('救助中', '处理中')
+                </when>
+                <when test="orderStatus != null and !orderStatus.isBlank()">AND order_status = #{orderStatus}</when>
+            </choose>
+            <if test="publishUser != null">AND publish_user = #{publishUser}</if>
+        </where>
+    </sql>
+    <select id="findById" resultType="com.campus.animal.entity.RescueOrder">
+        SELECT <include refid="columns"/> FROM rescue_order WHERE rescue_id = #{id}
+    </select>
+    <select id="lockById" resultType="com.campus.animal.entity.RescueOrder">
+        SELECT <include refid="columns"/> FROM rescue_order WHERE rescue_id = #{id} FOR UPDATE
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="rescueId" keyColumn="rescue_id">
+        INSERT INTO rescue_order (animal_id, publish_user, rescue_content, location, order_status, deal_user, result, create_time, urgency)
+        VALUES (#{animalId}, #{publishUser}, #{rescueContent}, #{location}, #{orderStatus}, #{dealUser}, #{result}, #{createTime}, #{urgency})
+    </insert>
+    <update id="update">
+        UPDATE rescue_order
+        SET order_status = #{orderStatus}, deal_user = #{dealUser}, result = #{result}
+        WHERE rescue_id = #{rescueId}
+    </update>
+    <select id="findPage" resultType="com.campus.animal.entity.RescueOrder">
+        SELECT <include refid="columns"/> FROM rescue_order <include refid="filters"/>
+        ORDER BY create_time DESC, rescue_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countFiltered" resultType="long">
+        SELECT COUNT(*) FROM rescue_order <include refid="filters"/>
+    </select>
+    <select id="count" resultType="long">SELECT COUNT(*) FROM rescue_order</select>
+    <select id="countByOrderStatus" resultType="long">SELECT COUNT(*) FROM rescue_order WHERE order_status = #{value}</select>
+    <select id="countCompletedByDealUser" resultType="map">
+        SELECT u.user_id AS userId, u.nickname, u.username, COUNT(*) AS count
+        FROM rescue_order r JOIN `user` u ON r.deal_user = u.user_id
+        WHERE r.order_status = '已完成'
+        GROUP BY u.user_id, u.nickname, u.username ORDER BY count DESC, u.user_id LIMIT #{limit}
+    </select>
+</mapper>

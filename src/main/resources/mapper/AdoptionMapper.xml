@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.animal.mapper.AdoptionMapper">
+    <sql id="columns">id, animal_id, applicant_id, reason, contact, status, review_comment, review_user_id, apply_time, review_time</sql>
+    <sql id="filters">
+        <where>
+            <if test="status != null and !status.isBlank()">AND status = #{status}</if>
+            <if test="applicantId != null">AND applicant_id = #{applicantId}</if>
+        </where>
+    </sql>
+    <select id="findById" resultType="com.campus.animal.entity.Adoption">
+        SELECT <include refid="columns"/> FROM adoption WHERE id = #{id}
+    </select>
+    <select id="lockById" resultType="com.campus.animal.entity.Adoption">
+        SELECT <include refid="columns"/> FROM adoption WHERE id = #{id} FOR UPDATE
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO adoption (animal_id, applicant_id, reason, contact, status, review_comment, review_user_id, apply_time, review_time)
+        VALUES (#{animalId}, #{applicantId}, #{reason}, #{contact}, #{status}, #{reviewComment}, #{reviewUserId}, #{applyTime}, #{reviewTime})
+    </insert>
+    <update id="update">
+        UPDATE adoption
+        SET status = #{status}, review_comment = #{reviewComment}, review_user_id = #{reviewUserId}, review_time = #{reviewTime}
+        WHERE id = #{id}
+    </update>
+    <select id="findPage" resultType="com.campus.animal.entity.Adoption">
+        SELECT <include refid="columns"/> FROM adoption <include refid="filters"/>
+        ORDER BY apply_time DESC, id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countFiltered" resultType="long">
+        SELECT COUNT(*) FROM adoption <include refid="filters"/>
+    </select>
+    <select id="count" resultType="long">SELECT COUNT(*) FROM adoption</select>
+</mapper>

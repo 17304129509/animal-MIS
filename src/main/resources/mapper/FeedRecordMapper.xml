@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.animal.mapper.FeedRecordMapper">
+    <sql id="columns">record_id, user_id, point_id, food_type, amount, quantity, remark, feed_time</sql>
+    <sql id="filters">
+        <where>
+            <if test="userId != null">AND user_id = #{userId}</if>
+            <if test="pointId != null">AND point_id = #{pointId}</if>
+        </where>
+    </sql>
+    <select id="findById" resultType="com.campus.animal.entity.FeedRecord">
+        SELECT <include refid="columns"/> FROM feed_record WHERE record_id = #{id}
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="recordId" keyColumn="record_id">
+        INSERT INTO feed_record (user_id, point_id, food_type, amount, quantity, remark, feed_time)
+        VALUES (#{userId}, #{pointId}, #{foodType}, #{amount}, #{quantity}, #{remark}, #{feedTime})
+    </insert>
+    <select id="findPage" resultType="com.campus.animal.entity.FeedRecord">
+        SELECT <include refid="columns"/> FROM feed_record <include refid="filters"/>
+        ORDER BY feed_time DESC, record_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countFiltered" resultType="long">
+        SELECT COUNT(*) FROM feed_record <include refid="filters"/>
+    </select>
+    <select id="count" resultType="long">SELECT COUNT(*) FROM feed_record</select>
+    <select id="countByUser" resultType="map">
+        SELECT u.user_id AS userId, u.nickname, u.username, COUNT(*) AS count
+        FROM feed_record f JOIN `user` u ON f.user_id = u.user_id
+        GROUP BY u.user_id, u.nickname, u.username ORDER BY count DESC, u.user_id
+    </select>
+</mapper>

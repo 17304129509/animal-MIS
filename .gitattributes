@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.html text eol=lf
+src/main/resources/static/assets/** -text
+*.jpg binary
+*.png binary

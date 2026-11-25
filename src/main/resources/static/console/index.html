@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>校园流浪动物救助 - 后台管理系统</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; background: #f5f7fa; color: #2c3e50; }
+
+/* 登录页 */
+.login-container {
+  height: 100vh; display: flex; align-items: center; justify-content: center;
+  position: relative;
+  background: url('bg.png') center/cover no-repeat;
+}
+.login-container::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.15);
+}
+.login-box {
+  position: relative; z-index: 1;
+  background: rgba(255,255,255,0.92); padding: 44px 40px 24px; border-radius: 16px;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.12); width: 400px; text-align: center;
+  backdrop-filter: blur(10px);
+}
+.login-box h1 { font-size: 22px; color: #2c3e50; margin-bottom: 6px; font-weight: 700; }
+.login-box .subtitle { font-size: 13px; color: #7f8c8d; margin-bottom: 24px; }
+.login-box .badge {
+  display: inline-block; background: #e74c3c; color: #fff; font-size: 12px;
+  padding: 3px 14px; border-radius: 12px; margin-bottom: 18px; font-weight: 600;
+}
+.login-box .tip-box {
+  margin-bottom: 18px; padding: 10px 14px; background: #ebf5fb; border-radius: 8px;
+  font-size: 12px; color: #2980b9; border: 1px solid #bee5eb; text-align: left; line-height: 1.6;
+}
+.login-box .tip-box strong { color: #e74c3c; }
+.login-box input {
+  width: 100%; padding: 12px 16px; margin-bottom: 14px; border: 1px solid #dfe6e9;
+  border-radius: 8px; font-size: 14px; outline: none; transition: border 0.2s;
+  background: #fff;
+}
+.login-box input:focus { border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.1); }
+.login-box button {
+  width: 100%; padding: 12px; background: linear-gradient(135deg, #3498db, #2ecc71);
+  color: #fff; border: none; border-radius: 8px; font-size: 15px; cursor: pointer;
+  font-weight: 600; letter-spacing: 1px;
+}
+.login-box button:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(52,152,219,0.3); }
+.login-box .error { color: #e74c3c; font-size: 13px; margin-top: 8px; min-height: 20px; }
+
+/* 主布局 */
+.app-layout { display: none; height: 100vh; }
+.sidebar {
+  width: 220px; background: #fff; position: fixed; top: 0; left: 0;
+  bottom: 0; overflow-y: auto; z-index: 10;
+  border-right: 1px solid #e8ecf1; box-shadow: 2px 0 8px rgba(0,0,0,0.04);
+}
+.sidebar .logo {
+  padding: 22px 20px; font-size: 16px; font-weight: 700; color: #2c3e50;
+  border-bottom: 1px solid #e8ecf1; text-align: center;
+  background: linear-gradient(135deg, #f8f9fa, #fff);
+}
+.sidebar .logo .admin-badge {
+  font-size: 11px; color: #e74c3c; display: block; margin-top: 4px; font-weight: 500;
+}
+.sidebar nav { padding: 8px 0; }
+.sidebar .nav-item {
+  display: flex; align-items: center; padding: 12px 24px; cursor: pointer;
+  color: #5a6c7d; font-size: 14px; transition: all 0.2s;
+  border-left: 3px solid transparent; margin: 2px 8px; border-radius: 0 6px 6px 0;
+}
+.sidebar .nav-item:hover { color: #3498db; background: #ebf5fb; }
+.sidebar .nav-item.active {
+  color: #3498db; background: #ebf5fb; border-left-color: #3498db; font-weight: 600;
+}
+.sidebar .nav-item .icon { margin-right: 10px; font-size: 16px; }
+.main-content {
+  margin-left: 220px; padding: 24px 28px; min-height: 100vh; background: #f5f7fa;
+}
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; padding: 14px 24px; background: #fff; border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e8ecf1;
+}
+.header h2 { font-size: 18px; color: #2c3e50; font-weight: 600; }
+.header .user-info { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #5a6c7d; }
+.header .logout-btn {
+  padding: 6px 16px; background: #fff; color: #e74c3c; border: 1px solid #e74c3c;
+  border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;
+}
+.header .logout-btn:hover { background: #e74c3c; color: #fff; }
+
+/* 卡片 */
+.card {
+  background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  padding: 24px; margin-bottom: 20px; border: 1px solid #e8ecf1;
+}
+.card h3 { font-size: 16px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e8ecf1; color: #2c3e50; }
+
+/* 统计卡片 */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.stat-card {
+  background: #fff; padding: 22px 18px; border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06); text-align: center;
+  border: 1px solid #e8ecf1; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card .number { font-size: 30px; font-weight: 700; color: #3498db; }
+.stat-card .label { font-size: 13px; color: #7f8c8d; margin-top: 6px; }
+.stat-card.warn .number { color: #f39c12; }
+.stat-card.danger .number { color: #e74c3c; }
+
+/* 表格 */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { background: #f8f9fa; padding: 10px 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #e8ecf1; color: #5a6c7d; }
+td { padding: 10px 12px; border-bottom: 1px solid #f0f3f5; color: #2c3e50; }
+tr:hover td { background: #fafcfd; }
+
+/* 按钮 */
+.btn {
+  padding: 7px 16px; border: none; border-radius: 6px; cursor: pointer;
+  font-size: 12px; margin: 0 3px; transition: all 0.2s; font-weight: 500;
+}
+.btn-primary { background: #3498db; color: #fff; }
+.btn-primary:hover { background: #2980b9; }
+.btn-success { background: #2ecc71; color: #fff; }
+.btn-success:hover { background: #27ae60; }
+.btn-danger { background: #e74c3c; color: #fff; }
+.btn-danger:hover { background: #c0392b; }
+.btn-warning { background: #f39c12; color: #fff; }
+.btn-warning:hover { background: #e67e22; }
+.btn-default { background: #f8f9fa; color: #5a6c7d; border: 1px solid #dfe6e9; }
+.btn-default:hover { background: #e8ecf1; }
+.btn-small { padding: 4px 10px; font-size: 11px; }
+
+/* 状态标签 */
+.tag {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500;
+}
+.tag-pending { background: #fef5e7; color: #e67e22; border: 1px solid #fad7a1; }
+.tag-approved { background: #eafaf1; color: #27ae60; border: 1px solid #a9dfbf; }
+.tag-rejected { background: #fdedec; color: #e74c3c; border: 1px solid #f5b7b1; }
+.tag-processing { background: #eaf2f8; color: #2980b9; border: 1px solid #aed6f1; }
+.tag-completed { background: #eafaf1; color: #27ae60; border: 1px solid #a9dfbf; }
+
+/* 工具栏 */
+.toolbar {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+}
+.toolbar .left { display: flex; align-items: center; gap: 12px; }
+.filter-tabs { display: flex; gap: 0; }
+.filter-tab {
+  padding: 6px 16px; border: 1px solid #dfe6e9; cursor: pointer; font-size: 13px;
+  background: #fff; transition: all 0.2s; border-right: none;
+}
+.filter-tab:first-child { border-radius: 6px 0 0 6px; }
+.filter-tab:last-child { border-radius: 0 6px 6px 0; border-right: 1px solid #dfe6e9; }
+.filter-tab:hover { color: #3498db; background: #ebf5fb; }
+.filter-tab.active { background: #3498db; color: #fff; border-color: #3498db; }
+
+/* 弹窗 */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35); z-index: 100; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: #fff; border-radius: 12px; padding: 28px; width: 520px; max-width: 92vw;
+  max-height: 85vh; overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+.modal h3 { margin-bottom: 20px; font-size: 17px; color: #2c3e50; font-weight: 600; }
+.modal .form-group { margin-bottom: 14px; }
+.modal .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: #5a6c7d; font-weight: 500; }
+.modal .form-group input, .modal .form-group select, .modal .form-group textarea {
+  width: 100%; padding: 9px 12px; border: 1px solid #dfe6e9; border-radius: 6px; font-size: 13px;
+  outline: none; transition: border 0.2s; font-family: inherit;
+}
+.modal .form-group input:focus, .modal .form-group select:focus, .modal .form-group textarea:focus {
+  border-color: #3498db; box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+}
+.modal .form-group textarea { resize: vertical; min-height: 80px; }
+.modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+
+/* 消息提示 */
+.toast {
+  position: fixed; top: 24px; right: 24px; z-index: 200;
+  padding: 12px 24px; border-radius: 8px; color: #fff; font-size: 13px;
+  display: none; box-shadow: 0 6px 20px rgba(0,0,0,0.15); font-weight: 500;
+}
+.toast.success { background: #2ecc71; }
+.toast.error { background: #e74c3c; }
+.toast.show { display: block; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* 响应式 */
+@media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .sidebar { width: 56px; }
+  .sidebar .nav-item span:not(.icon) { display: none; }
+  .sidebar .logo { font-size: 12px; padding: 16px 8px; }
+  .main-content { margin-left: 56px; }
+  .modal .form-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- 登录页 -->
+<div id="loginPage" class="login-container">
+  <div class="login-box">
+    <h1>🐾 校园流浪动物救助系统</h1>
+    <div class="subtitle">后台管理中心</div>
+    <div class="badge">仅限管理员登录</div>
+    <div class="tip-box">
+      <strong>测试管理员账号：</strong>admin001<br>
+      <strong>登录密码：</strong>123456
+    </div>
+    <input type="text" id="loginUsername" placeholder="管理员账号" autocomplete="off">
+    <input type="password" id="loginPassword" placeholder="密码" autocomplete="off">
+    <button onclick="doLogin()">登 录 后 台</button>
+    <div class="error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- 主界面 -->
+<div id="appLayout" class="app-layout">
+  <aside class="sidebar">
+    <div class="logo">
+      动物救助管理
+      <span class="admin-badge">管理员后台</span>
+    </div>
+    <nav>
+      <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard', this)">
+        <span class="icon">📊</span> 控制面板
+      </div>
+      <div class="nav-item" data-page="animals" onclick="switchPage('animals', this)">
+        <span class="icon">🐾</span> 动物建档管理
+      </div>
+      <div class="nav-item" data-page="rescues" onclick="switchPage('rescues', this)">
+        <span class="icon">🚑</span> 救助工单管理
+      </div>
+      <div class="nav-item" data-page="adoptions" onclick="switchPage('adoptions', this)">
+        <span class="icon">🏠</span> 领养审核
+      </div>
+      <div class="nav-item" data-page="feedpoints" onclick="switchPage('feedpoints', this)">
+        <span class="icon">📍</span> 投喂点管理
+      </div>
+      <div class="nav-item" data-page="feedrecords" onclick="switchPage('feedrecords', this)">
+        <span class="icon">🍖</span> 投喂记录
+      </div>
+      <div class="nav-item" data-page="users" onclick="switchPage('users', this)">
+        <span class="icon">👥</span> 用户管理
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+    <div class="header">
+      <h2 id="pageTitle">控制面板</h2>
+      <div class="user-info">
+        <span id="headerUser">管理员</span>
+        <button class="logout-btn" onclick="doLogout()">退出登录</button>
+      </div>
+    </div>
+    <div id="pageContent"></div>
+  </main>
+</div>
+
+<!-- 动物建档弹窗 -->
+<div class="modal-overlay" id="animalModal">
+  <div class="modal">
+    <h3 id="animalModalTitle">新建动物建档</h3>
+    <div class="form-row">
+      <div class="form-group"><label>动物名称</label><input id="amName" placeholder="如：橘橘"></div>
+      <div class="form-group"><label>类型</label>
+        <select id="amType">
+          <option value="">请选择</option><option value="猫">猫</option><option value="狗">狗</option>
+          <option value="兔子">兔子</option><option value="鸟">鸟</option><option value="其他">其他</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>毛色</label><input id="amColor" placeholder="如：橘白"></div>
+      <div class="form-group"><label>性别</label>
+        <select id="amGender"><option value="">未知</option><option value="公">公</option><option value="母">母</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>位置</label><input id="amLocation" placeholder="如：图书馆东侧"></div>
+    <div class="form-group"><label>健康状况</label>
+      <select id="amHealth"><option value="健康">健康</option><option value="轻微受伤">轻微受伤</option><option value="需要救治">需要救治</option></select>
+    </div>
+    <div class="form-group"><label>描述</label><textarea id="amRemark" placeholder="动物的特征描述..." rows="2"></textarea></div>
+    <input type="hidden" id="amId">
+    <div class="modal-actions">
+      <button class="btn btn-default" onclick="closeAnimalModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveAnimal()">保存并直接通过</button>
+    </div>
+  </div>
+</div>
+
+<!-- 救助工单弹窗 -->
+<div class="modal-overlay" id="rescueModal">
+  <div class="modal">
+    <h3>发布救助工单</h3>
+    <div class="form-group"><label>关联动物</label>
+      <select id="rmAnimal"></select>
+    </div>
+    <div class="form-group"><label>救助内容</label><textarea id="rmContent" placeholder="描述救助需求..." rows="2"></textarea></div>
+    <div class="form-group"><label>位置</label><input id="rmLocation" placeholder="救助地点"></div>
+    <div class="form-group"><label>紧急程度</label>
+      <select id="rmUrgency"><option value="普通">普通</option><option value="紧急">紧急</option><option value="危重">危重</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-default" onclick="closeRescueModal()">取消</button>
+      <button class="btn btn-primary" onclick="createRescue()">发布工单</button>
+    </div>
+  </div>
+</div>
+
+<!-- 提示 -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/admin';
+let token = localStorage.getItem('admin_token');
+let animalRows = [];
+let feedPointRows = [];
+let currentFilter = { animals: 'all', rescues: 'all', adoptions: 'all' };
+
+// ============ 公共函数 ============
+async function fetchAPI(url, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(url, { ...options, headers });
+  const data = await res.json();
+  if (data.code === 401) { doLogout(); throw new Error('登录过期'); }
+  return data;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+}
+
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+function switchPage(page, navItem) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  navItem.classList.add('active');
+  document.getElementById('pageTitle').textContent = navItem.textContent.trim();
+  const pages = {
+    dashboard: renderDashboard, animals: renderAnimals,
+    rescues: renderRescues, adoptions: renderAdoptions,
+    feedpoints: renderFeedPoints, feedrecords: renderFeedRecords, users: renderUsers
+  };
+  if (pages[page]) pages[page]();
+}
+
+// ============ 登录 ============
+async function doLogin() {
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  const errEl = document.getElementById('loginError');
+  if (!username || !password) { errEl.textContent = '请输入账号和密码'; return; }
+  try {
+    const data = await fetch(API + '/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    }).then(r => r.json());
+    if (data.code === 200) {
+      token = data.data.token;
+      localStorage.setItem('admin_token', token);
+      localStorage.setItem('admin_user', JSON.stringify(data.data.user));
+      document.getElementById('loginPage').style.display = 'none';
+      document.getElementById('appLayout').style.display = 'flex';
+      document.getElementById('headerUser').textContent = data.data.user.nickname + ' (' + data.data.user.username + ')';
+      renderDashboard();
+    } else {
+      errEl.textContent = data.message;
+    }
+  } catch (e) { errEl.textContent = '网络错误，请稍后重试'; }
+}
+
+function doLogout() {
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('admin_user');
+  token = null;
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('appLayout').style.display = 'none';
+}
+
+function checkLogin() {
+  if (!token) { document.getElementById('appLayout').style.display = 'none'; return false; }
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appLayout').style.display = 'flex';
+  try {
+    const user = JSON.parse(localStorage.getItem('admin_user') || '{}');
+    document.getElementById('headerUser').textContent = (user.nickname || '管理员') + ' (' + (user.username || '') + ')';
+  } catch (e) {}
+  return true;
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && document.getElementById('loginPage').style.display !== 'none') doLogin();
+});
+
+// ============ 控制面板 ============
+async function renderDashboard() {
+  const data = await fetchAPI(API + '/stats');
+  if (data.code !== 200) return;
+  const s = data.data;
+  document.getElementById('pageContent').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card" onclick="switchPage('animals', document.querySelector('[data-page=animals]'))">
+        <div class="number" style="color:#3498db">${s.animalTotal}</div><div class="label">动物总数</div>
+      </div>
+      <div class="stat-card warn" onclick="switchPage('animals', document.querySelector('[data-page=animals]'))">
+        <div class="number">${s.animalPending}</div><div class="label">待审批建档</div>
+      </div>
+      <div class="stat-card danger" onclick="switchPage('rescues', document.querySelector('[data-page=rescues]'))">
+        <div class="number">${s.rescuePending}</div><div class="label">待处理救助</div>
+      </div>
+      <div class="stat-card" onclick="switchPage('adoptions', document.querySelector('[data-page=adoptions]'))">
+        <div class="number" style="color:#9b59b6">${s.adoptionPending}</div><div class="label">待审核领养</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="number" style="color:#1abc9c">${s.userTotal}</div><div class="label">用户总数</div></div>
+      <div class="stat-card"><div class="number" style="color:#e74c3c">${s.feedTotal}</div><div class="label">投喂记录</div></div>
+      <div class="stat-card"><div class="number" style="color:#f39c12">${s.pointTotal}</div><div class="label">投喂点位</div></div>
+      <div class="stat-card"><div class="number" style="color:#2980b9">${s.rescueTotal}</div><div class="label">救助工单总数</div></div>
+    </div>
+    <div class="card" style="text-align:center;padding:36px">
+      <p style="font-size:16px;color:#2c3e50;font-weight:600">欢迎使用后台管理系统</p>
+      <p style="color:#7f8c8d;font-size:13px;margin-top:8px">
+        可管理：动物建档 | 救助工单 | 领养审核 | 投喂点 | 用户
+      </p>
+    </div>
+  `;
+}
+
+// ============ 动物建档管理 ============
+async function renderAnimals() {
+  const filter = currentFilter.animals || 'all';
+  const data = await fetchAPI(API + '/animals?status=' + (filter === 'all' ? '' : filter));
+  animalRows = data.data || [];
+  let rows = '';
+  animalRows.forEach(a => {
+    const statusTag = a.is_approved ? '<span class="tag tag-approved">已通过</span>' : '<span class="tag tag-pending">待审批</span>';
+    let actions = '';
+    if (a.is_approved) {
+      actions = `<button class="btn btn-default btn-small" onclick="editAnimal(${a.animal_id})">编辑</button>
+                 <button class="btn btn-danger btn-small" onclick="deleteAnimal(${a.animal_id})">删除</button>`;
+    } else {
+      actions = `<button class="btn btn-success btn-small" onclick="approveAnimal(${a.animal_id})">通过</button>
+                 <button class="btn btn-danger btn-small" onclick="rejectAnimal(${a.animal_id})">驳回</button>
+                 <button class="btn btn-default btn-small" onclick="deleteAnimal(${a.animal_id})">删除</button>`;
+    }
+    const sd = a.status === '已领养' ? '<span style="color:#9b59b6;font-weight:500">已领养</span>' : escapeHtml(a.status || '-');
+    rows += `<tr>
+      <td>${a.animal_id}</td><td>${escapeHtml(a.animal_name)}</td><td>${escapeHtml(a.type)}</td>
+      <td>${escapeHtml(a.color || '-')}</td><td>${escapeHtml(a.gender || '-')}</td><td>${escapeHtml(a.location)}</td>
+      <td>${escapeHtml(a.health || '-')}</td><td>${sd}</td><td>${statusTag}</td>
+      <td>${escapeHtml(a.creator_name || '-')}</td><td>${a.create_time ? a.create_time.substring(0,10) : '-'}</td>
+      <td>${actions}</td>
+    </tr>`;
+  });
+  document.getElementById('pageContent').innerHTML = `
+    <div class="card">
+      <div class="toolbar">
+        <div class="left">
+          <div class="filter-tabs">
+            <div class="filter-tab ${filter==='all'?'active':''}" onclick="currentFilter.animals='all';renderAnimals()">全部</div>
+            <div class="filter-tab ${filter==='pending'?'active':''}" onclick="currentFilter.animals='pending';renderAnimals()">待审批</div>
+            <div class="filter-tab ${filter==='approved'?'active':''}" onclick="currentFilter.animals='approved';renderAnimals()">已通过</div>
+          </div>
+          <button class="btn btn-primary" onclick="showAddAnimal()">+ 新建建档</button>
+        </div>
+        <span style="font-size:12px;color:#7f8c8d">共 ${(data.data||[]).length} 条</span>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>ID</th><th>名称</th><th>类型</th><th>毛色</th><th>性别</th><th>位置</th><th>健康</th><th>状态</th><th>审批</th><th>创建人</th><th>时间</th><th>操作</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="12" style="text-align:center;color:#7f8c8d;padding:24px">暂无数据</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  `;
+}
+
+function showAddAnimal() {
+  document.getElementById('animalModalTitle').textContent = '新建动物建档';
+  document.getElementById('amId').value = '';
+  document.getElementById('amName').value = '';
+  document.getElementById('amType').value = '';
+  document.getElementById('amColor').value = '';
+  document.getElementById('amGender').value = '';
+  document.getElementById('amLocation').value = '';
+  document.getElementById('amHealth').value = '健康';
+  document.getElementById('amRemark').value = '';
+  document.getElementById('animalModal').classList.add('show');
+}
+
+function editAnimal(id) {
+  const {animal_name: name, type, color, gender, location, health, remark} =
+    animalRows.find(animal => animal.animal_id === id);
+  const typeSelect = document.getElementById('amType');
+  if (![...typeSelect.options].some(option => option.value === type)) {
+    typeSelect.add(new Option(type, type));
+  }
+  document.getElementById('animalModalTitle').textContent = '编辑动物档案';
+  document.getElementById('amId').value = id;
+  document.getElementById('amName').value = name;
+  document.getElementById('amType').value = type;
+  document.getElementById('amColor').value = color || '';
+  document.getElementById('amGender').value = gender || '';
+  document.getElementById('amLocation').value = location;
+  document.getElementById('amHealth').value = health || '健康';
+  document.getElementById('amRemark').value = remark || '';
+  document.getElementById('animalModal').classList.add('show');
+}
+
+function closeAnimalModal() {
+  document.getElementById('animalModal').classList.remove('show');
+}
+
+async function saveAnimal() {
+  const id = document.getElementById('amId').value;
+  const body = {
+    animal_name: document.getElementById('amName').value.trim(),
+    type: document.getElementById('amType').value,
+    color: document.getElementById('amColor').value.trim(),
+    gender: document.getElementById('amGender').value,
+    location: document.getElementById('amLocation').value.trim(),
+    health: document.getElementById('amHealth').value,
+    remark: document.getElementById('amRemark').value.trim()
+  };
+  if (!body.animal_name || !body.type) { showToast('名称和类型不能为空', 'error'); return; }
+  const url = id ? API + '/animals/' + id + '/edit' : API + '/animals/create';
+  const method = id ? 'PUT' : 'POST';
+  const data = await fetchAPI(url, { method, body: JSON.stringify(body) });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  if (data.code === 200) { closeAnimalModal(); renderAnimals(); }
+}
+
+async function approveAnimal(id) {
+  if (!confirm('确认通过该建档申请？')) return;
+  const data = await fetchAPI(API + '/animals/' + id + '/approve', { method: 'PUT' });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderAnimals();
+}
+
+async function rejectAnimal(id) {
+  const reason = prompt('请输入驳回原因（可选）：');
+  if (reason === null) return;
+  const data = await fetchAPI(API + '/animals/' + id + '/reject', {
+    method: 'PUT', body: JSON.stringify({ reason })
+  });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderAnimals();
+}
+
+async function deleteAnimal(id) {
+  if (!confirm('确认删除该动物档案？')) return;
+  const data = await fetchAPI(API + '/animals/' + id, { method: 'DELETE' });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderAnimals();
+}
+
+// ============ 救助工单管理 ============
+async function renderRescues() {
+  const filter = currentFilter.rescues || 'all';
+  const [rescueData, animalData] = await Promise.all([
+    fetchAPI(API + '/rescues?status=' + (filter === 'all' ? '' : filter)),
+    fetchAPI(API + '/animals')
+  ]);
+  window._allAnimals = animalData.data || [];
+  let rows = '';
+  (rescueData.data || []).forEach(r => {
+    let statusTag = '';
+    if (r.order_status === '待处理') statusTag = '<span class="tag tag-pending">待处理</span>';
+    else if (r.order_status === '处理中') statusTag = '<span class="tag tag-processing">处理中</span>';
+    else if (r.order_status === '已完成') statusTag = '<span class="tag tag-completed">已完成</span>';
+    else if (r.order_status === '已驳回') statusTag = '<span class="tag tag-rejected">已驳回</span>';
+    else statusTag = escapeHtml(r.order_status);
+    let actions = '';
+    if (r.order_status === '待处理') {
+      actions = `<button class="btn btn-primary btn-small" onclick="processRescue(${r.rescue_id})">接单</button>
+                 <button class="btn btn-danger btn-small" onclick="rejectRescue(${r.rescue_id})">驳回</button>`;
+    } else if (r.order_status === '处理中') {
+      actions = `<button class="btn btn-success btn-small" onclick="completeRescue(${r.rescue_id})">完成</button>`;
+    } else {
+      actions = '<span style="color:#bdc3c7;font-size:11px">-</span>';
+    }
+    rows += `<tr>
+      <td>${r.rescue_id}</td><td>${escapeHtml(r.animal_name || '-')}</td>
+      <td>${escapeHtml(r.rescue_content)}</td><td>${escapeHtml(r.location)}</td>
+      <td>${escapeHtml(r.urgency || '-')}</td><td>${statusTag}</td>
+      <td>${escapeHtml(r.publisher_name || '-')}</td><td>${escapeHtml(r.dealer_name || '-')}</td>
+      <td>${r.create_time ? r.create_time.substring(0,10) : '-'}</td>
+      <td>${actions}</td>
+    </tr>`;
+  });
+  document.getElementById('pageContent').innerHTML = `
+    <div class="card">
+      <div class="toolbar">
+        <div class="left">
+          <div class="filter-tabs">
+            <div class="filter-tab ${filter==='all'?'active':''}" onclick="currentFilter.rescues='all';renderRescues()">全部</div>
+            <div class="filter-tab ${filter==='pending'?'active':''}" onclick="currentFilter.rescues='pending';renderRescues()">待处理</div>
+            <div class="filter-tab ${filter==='processing'?'active':''}" onclick="currentFilter.rescues='processing';renderRescues()">处理中</div>
+            <div class="filter-tab ${filter==='completed'?'active':''}" onclick="currentFilter.rescues='completed';renderRescues()">已完成</div>
+          </div>
+          <button class="btn btn-warning" onclick="showCreateRescue()">+ 发布工单</button>
+        </div>
+        <span style="font-size:12px;color:#7f8c8d">共 ${(rescueData.data||[]).length} 条</span>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>ID</th><th>关联动物</th><th>内容</th><th>位置</th><th>紧急</th><th>状态</th><th>发布人</th><th>处理人</th><th>时间</th><th>操作</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="10" style="text-align:center;color:#7f8c8d;padding:24px">暂无数据</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  `;
+}
+
+function showCreateRescue() {
+  const animals = window._allAnimals || [];
+  let opts = '<option value="">请选择动物（可选）</option>';
+  animals.forEach(a => {
+    opts += `<option value="${a.animal_id}">${escapeHtml(a.animal_name)} (${escapeHtml(a.type)})</option>`;
+  });
+  document.getElementById('rmAnimal').innerHTML = opts;
+  document.getElementById('rmContent').value = '';
+  document.getElementById('rmLocation').value = '';
+  document.getElementById('rmUrgency').value = '普通';
+  document.getElementById('rescueModal').classList.add('show');
+}
+
+function closeRescueModal() {
+  document.getElementById('rescueModal').classList.remove('show');
+}
+
+async function createRescue() {
+  const body = {
+    animal_id: document.getElementById('rmAnimal').value || null,
+    rescue_content: document.getElementById('rmContent').value.trim(),
+    location: document.getElementById('rmLocation').value.trim(),
+    urgency: document.getElementById('rmUrgency').value
+  };
+  if (!body.rescue_content || !body.location) { showToast('救助内容和位置不能为空', 'error'); return; }
+  const data = await fetchAPI(API + '/rescues/create', { method: 'POST', body: JSON.stringify(body) });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  if (data.code === 200) { closeRescueModal(); renderRescues(); }
+}
+
+async function processRescue(id) {
+  if (!confirm('确认接单处理此救助任务？')) return;
+  const data = await fetchAPI(API + '/rescues/' + id + '/process', { method: 'PUT' });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderRescues();
+}
+
+async function completeRescue(id) {
+  const result = prompt('请输入救助结果描述：');
+  if (result === null) return;
+  const data = await fetchAPI(API + '/rescues/' + id + '/complete', {
+    method: 'PUT', body: JSON.stringify({ result })
+  });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderRescues();
+}
+
+async function rejectRescue(id) {
+  const reason = prompt('请输入驳回原因：');
+  if (reason === null) return;
+  const data = await fetchAPI(API + '/rescues/' + id + '/reject', {
+    method: 'PUT', body: JSON.stringify({ reason })
+  });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderRescues();
+}
+
+// ============ 领养审核 ============
+async function renderAdoptions() {
+  const filter = currentFilter.adoptions || 'all';
+  const data = await fetchAPI(API + '/adoptions?status=' + (filter === 'all' ? '' : filter));
+  let rows = '';
+  (data.data || []).forEach(a => {
+    let statusTag = '';
+    if (a.status === '待审核') statusTag = '<span class="tag tag-pending">待审核</span>';
+    else if (a.status === '已通过') statusTag = '<span class="tag tag-approved">已通过</span>';
+    else if (a.status === '已驳回') statusTag = '<span class="tag tag-rejected">已驳回</span>';
+    else statusTag = escapeHtml(a.status);
+    let actions = '';
+    if (a.status === '待审核') {
+      actions = `<button class="btn btn-success btn-small" onclick="approveAdoption(${a.id})">通过</button>
+                 <button class="btn btn-danger btn-small" onclick="rejectAdoption(${a.id})">驳回</button>`;
+    } else {
+      actions = '<span style="color:#bdc3c7;font-size:11px">已处理</span>';
+    }
+    rows += `<tr>
+      <td>${a.id}</td><td>${escapeHtml(a.animal_name || '-')}(${escapeHtml(a.animal_type || '-')})</td>
+      <td>${escapeHtml(a.applicant_name || '-')}</td><td>${escapeHtml(a.reason)}</td>
+      <td>${escapeHtml(a.contact || '-')}</td><td>${statusTag}</td>
+      <td>${escapeHtml(a.reviewer_name || '-')}</td><td>${escapeHtml(a.review_comment || '-')}</td>
+      <td>${a.apply_time ? a.apply_time.substring(0,10) : '-'}</td>
+      <td>${actions}</td>
+    </tr>`;
+  });
+  document.getElementById('pageContent').innerHTML = `
+    <div class="card">
+      <div class="toolbar">
+        <div class="filter-tabs">
+          <div class="filter-tab ${filter==='all'?'active':''}" onclick="currentFilter.adoptions='all';renderAdoptions()">全部</div>
+          <div class="filter-tab ${filter==='pending'?'active':''}" onclick="currentFilter.adoptions='pending';renderAdoptions()">待审核</div>
+          <div class="filter-tab ${filter==='approved'?'active':''}" onclick="currentFilter.adoptions='approved';renderAdoptions()">已通过</div>
+          <div class="filter-tab ${filter==='rejected'?'active':''}" onclick="currentFilter.adoptions='rejected';renderAdoptions()">已驳回</div>
+        </div>
+        <span style="font-size:12px;color:#7f8c8d">共 ${(data.data||[]).length} 条</span>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>ID</th><th>动物</th><th>申请人</th><th>理由</th><th>联系方式</th><th>状态</th><th>审核人</th><th>意见</th><th>申请时间</th><th>操作</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="10" style="text-align:center;color:#7f8c8d;padding:24px">暂无数据</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  `;
+}
+
+async function approveAdoption(id) {
+  const comment = prompt('请输入审核意见（可选）：') || '';
+  if (comment === null) return;
+  if (!confirm('确认通过？通过后动物状态将变为"已领养"。')) return;
+  const data = await fetchAPI(API + '/adoptions/' + id + '/approve', {
+    method: 'PUT', body: JSON.stringify({ comment })
+  });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderAdoptions();
+}
+
+async function rejectAdoption(id) {
+  const reason = prompt('请输入驳回原因：');
+  if (reason === null) return;
+  const data = await fetchAPI(API + '/adoptions/' + id + '/reject', {
+    method: 'PUT', body: JSON.stringify({ reason })
+  });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderAdoptions();
+}
+
+// ============ 投喂点管理 ============
+async function renderFeedPoints() {
+  const data = await fetchAPI(API + '/feed-points');
+  feedPointRows = data.data || [];
+  let rows = '';
+  feedPointRows.forEach(fp => {
+    let statusClass = fp.food_status === '充足' ? 'tag-approved' : (fp.food_status === '不足' ? 'tag-pending' : 'tag-rejected');
+    rows += `<tr>
+      <td>${fp.point_id}</td><td>${escapeHtml(fp.point_name)}</td><td>${escapeHtml(fp.location)}</td>
+      <td><span class="tag ${statusClass}">${escapeHtml(fp.food_status)}</span></td>
+      <td>${escapeHtml(fp.updater_name || '-')}</td><td>${fp.update_time ? fp.update_time.substring(0,10) : '-'}</td>
+      <td>
+        <button class="btn btn-primary btn-small" onclick="editFeedPoint(${fp.point_id})">编辑</button>
+        <button class="btn btn-danger btn-small" onclick="deleteFeedPoint(${fp.point_id})">删除</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('pageContent').innerHTML = `
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h3 style="margin:0;padding:0;border:none">投喂点列表</h3>
+        <button class="btn btn-primary" onclick="showAddFeedPoint()">+ 添加投喂点</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>ID</th><th>名称</th><th>位置</th><th>物资状态</th><th>更新人</th><th>更新时间</th><th>操作</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="7" style="text-align:center;color:#7f8c8d;padding:24px">暂无数据</td></tr>'}</tbody>
+      </table></div>
+    </div>
+    <div class="modal-overlay" id="feedpointModal">
+      <div class="modal">
+        <h3 id="fpModalTitle">添加投喂点</h3>
+        <div class="form-group"><label>名称</label><input id="fpName"></div>
+        <div class="form-group"><label>位置</label><input id="fpLocation"></div>
+        <div class="form-group"><label>物资状态</label>
+          <select id="fpStatus">
+            <option value="充足">充足</option><option value="不足">不足</option><option value="空缺">空缺</option>
+          </select>
+        </div>
+        <input type="hidden" id="fpId">
+        <div class="modal-actions">
+          <button class="btn btn-default" onclick="closeFeedPointModal()">取消</button>
+          <button class="btn btn-primary" onclick="saveFeedPoint()">保存</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function showAddFeedPoint() {
+  document.getElementById('fpModalTitle').textContent = '添加投喂点';
+  document.getElementById('fpId').value = '';
+  document.getElementById('fpName').value = '';
+  document.getElementById('fpLocation').value = '';
+  document.getElementById('fpStatus').value = '充足';
+  document.getElementById('feedpointModal').classList.add('show');
+}
+function editFeedPoint(id) {
+  const {point_name: name, location, food_status: status} =
+    feedPointRows.find(point => point.point_id === id);
+  document.getElementById('fpModalTitle').textContent = '编辑投喂点';
+  document.getElementById('fpId').value = id;
+  document.getElementById('fpName').value = name;
+  document.getElementById('fpLocation').value = location;
+  document.getElementById('fpStatus').value = status;
+  document.getElementById('feedpointModal').classList.add('show');
+}
+function closeFeedPointModal() { document.getElementById('feedpointModal').classList.remove('show'); }
+async function saveFeedPoint() {
+  const id = document.getElementById('fpId').value;
+  const body = {
+    point_name: document.getElementById('fpName').value.trim(),
+    location: document.getElementById('fpLocation').value.trim(),
+    food_status: document.getElementById('fpStatus').value
+  };
+  if (!body.point_name || !body.location) { showToast('名称和位置不能为空','error'); return; }
+  const url = id ? API + '/feed-points/' + id : API + '/feed-points';
+  const method = id ? 'PUT' : 'POST';
+  const data = await fetchAPI(url, { method, body: JSON.stringify(body) });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  if (data.code === 200) { closeFeedPointModal(); renderFeedPoints(); }
+}
+async function deleteFeedPoint(id) {
+  if (!confirm('确认删除该投喂点？')) return;
+  const data = await fetchAPI(API + '/feed-points/' + id, { method: 'DELETE' });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderFeedPoints();
+}
+
+// ============ 投喂记录 ============
+async function renderFeedRecords() {
+  const data = await fetchAPI(API + '/feed-records');
+  let rows = '';
+  (data.data || []).forEach(r => {
+    rows += `<tr>
+      <td>${r.record_id}</td><td>${escapeHtml(r.user_name || '-')}</td><td>${escapeHtml(r.point_name || '-')}</td>
+      <td>${escapeHtml(r.food_type || '-')}</td><td>${r.quantity || '-'}</td>
+      <td>${r.amount ? '¥'+r.amount : '-'}</td><td>${escapeHtml(r.remark || '-')}</td>
+      <td>${r.feed_time ? r.feed_time.substring(0,16) : '-'}</td>
+    </tr>`;
+  });
+  document.getElementById('pageContent').innerHTML = `
+    <div class="card">
+      <h3>投喂记录</h3>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>ID</th><th>用户</th><th>投喂点</th><th>食物类型</th><th>数量</th><th>金额</th><th>备注</th><th>时间</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="8" style="text-align:center;color:#7f8c8d;padding:24px">暂无数据</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  `;
+}
+
+// ============ 用户管理 ============
+async function renderUsers() {
+  const data = await fetchAPI(API + '/users');
+  let rows = '';
+  (data.data || []).forEach(u => {
+    let roleTag = u.role === 'admin' ? '<span class="tag tag-rejected">管理员</span>'
+      : (u.role === 'volunteer' ? '<span class="tag tag-processing">志愿者</span>'
+      : '<span class="tag tag-approved">学生</span>');
+    rows += `<tr>
+      <td>${u.user_id}</td><td>${escapeHtml(u.username)}</td><td>${escapeHtml(u.nickname)}</td>
+      <td>${escapeHtml(u.phone || '-')}</td><td>${roleTag}</td><td>${u.love_points}</td>
+      <td>${u.create_time ? u.create_time.substring(0,10) : '-'}</td>
+      <td>
+        <select onchange="changeUserRole(${u.user_id}, this.value)" style="font-size:11px;padding:2px;border:1px solid #dfe6e9;border-radius:4px">
+          <option value="">改角色</option>
+          <option value="student">学生</option>
+          <option value="volunteer">志愿者</option>
+          <option value="admin">管理员</option>
+        </select>
+        <button class="btn btn-danger btn-small" style="margin-left:4px" onclick="deleteUser(${u.user_id})">删除</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('pageContent').innerHTML = `
+    <div class="card">
+      <h3>用户列表</h3>
+      <div class="table-wrap"><table>
+        <thead><tr>
+          <th>ID</th><th>账号</th><th>昵称</th><th>手机</th><th>角色</th><th>积分</th><th>注册时间</th><th>操作</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="8" style="text-align:center;color:#7f8c8d;padding:24px">暂无数据</td></tr>'}</tbody>
+      </table></div>
+    </div>
+  `;
+}
+async function changeUserRole(userId, role) {
+  if (!role) return;
+  if (!confirm(`确认将该用户角色改为"${role}"？`)) return;
+  const data = await fetchAPI(API + '/users/' + userId + '/role', { method: 'PUT', body: JSON.stringify({ role }) });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderUsers();
+}
+async function deleteUser(userId) {
+  if (!confirm('确认删除该用户？')) return;
+  const data = await fetchAPI(API + '/users/' + userId, { method: 'DELETE' });
+  showToast(data.message, data.code === 200 ? 'success' : 'error');
+  renderUsers();
+}
+
+// ============ 初始化 ============
+if (token) {
+  fetchAPI(API + '/info').then(data => {
+    if (data.code === 200) { checkLogin(); renderDashboard(); }
+    else doLogout();
+  }).catch(() => doLogout());
+}
+</script>
+</body>
+</html>

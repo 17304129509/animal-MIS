@@ -1,0 +1,22 @@
+server:
+  port: ${SERVER_PORT:8081}
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/campus_animal?connectionTimeZone=Asia/Shanghai}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    call-setters-on-nulls: true
+jwt:
+  secret: ${JWT_SECRET:}
+  expiration-ms: 86400000
+app:
+  admin-port: ${ADMIN_PORT:8082}
+  upload-dir: ${UPLOAD_DIR:static/uploads}

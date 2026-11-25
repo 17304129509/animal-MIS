@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.animal.mapper.UserMapper">
+    <sql id="columns">user_id, username, password, nickname, phone, role, love_points, create_time</sql>
+    <sql id="filters">
+        <where>
+            <if test="role != null and !role.isBlank()">AND role = #{role}</if>
+        </where>
+    </sql>
+    <select id="findById" resultType="com.campus.animal.entity.User">
+        SELECT <include refid="columns"/> FROM `user` WHERE user_id = #{id}
+    </select>
+    <select id="lockById" resultType="com.campus.animal.entity.User">
+        SELECT <include refid="columns"/> FROM `user` WHERE user_id = #{id} FOR UPDATE
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="userId" keyColumn="user_id">
+        INSERT INTO `user` (username, password, nickname, phone, role, love_points, create_time)
+        VALUES (#{username}, #{password}, #{nickname}, #{phone}, #{role}, #{lovePoints}, #{createTime})
+    </insert>
+    <select id="findPage" resultType="com.campus.animal.entity.User">
+        SELECT <include refid="columns"/> FROM `user` <include refid="filters"/>
+        ORDER BY user_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countFiltered" resultType="long">
+        SELECT COUNT(*) FROM `user` <include refid="filters"/>
+    </select>
+    <select id="count" resultType="long">SELECT COUNT(*) FROM `user`</select>
+    <select id="findByUsername" resultType="com.campus.animal.entity.User">
+        SELECT <include refid="columns"/> FROM `user` WHERE username = #{username}
+    </select>
+    <select id="existsByUsername" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM `user` WHERE username = #{username})
+    </select>
+    <update id="updateProfile">UPDATE `user` SET nickname = #{nickname}, phone = #{phone} WHERE user_id = #{userId}</update>
+    <update id="updatePassword">UPDATE `user` SET password = #{password} WHERE user_id = #{id}</update>
+    <update id="upgradePassword">
+        UPDATE `user` SET password = #{password} WHERE user_id = #{id} AND BINARY password = #{old}
+    </update>
+    <update id="updateRole">UPDATE `user` SET role = #{role} WHERE user_id = #{id}</update>
+    <update id="updatePoints">UPDATE `user` SET love_points = #{points} WHERE user_id = #{id}</update>
+</mapper>

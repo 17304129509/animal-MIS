@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.animal.mapper.FeedPointMapper">
+    <sql id="columns">point_id, point_name, location, food_status, last_update_user, update_time</sql>
+    <sql id="filters">
+        <where>
+            <if test="foodStatus != null and !foodStatus.isBlank()">AND food_status = #{foodStatus}</if>
+        </where>
+    </sql>
+    <select id="findById" resultType="com.campus.animal.entity.FeedPoint">
+        SELECT <include refid="columns"/> FROM feed_point WHERE point_id = #{id}
+    </select>
+    <select id="lockById" resultType="com.campus.animal.entity.FeedPoint">
+        SELECT <include refid="columns"/> FROM feed_point WHERE point_id = #{id} FOR UPDATE
+    </select>
+    <insert id="insert" useGeneratedKeys="true" keyProperty="pointId" keyColumn="point_id">
+        INSERT INTO feed_point (point_name, location, food_status, last_update_user, update_time)
+        VALUES (#{pointName}, #{location}, #{foodStatus}, #{lastUpdateUser}, #{updateTime})
+    </insert>
+    <update id="update">
+        UPDATE feed_point
+        SET food_status = #{foodStatus}, last_update_user = #{lastUpdateUser}, update_time = #{updateTime}
+        WHERE point_id = #{pointId}
+    </update>
+    <delete id="deleteById">DELETE FROM feed_point WHERE point_id = #{id}</delete>
+    <select id="existsById" resultType="boolean">SELECT EXISTS(SELECT 1 FROM feed_point WHERE point_id = #{id})</select>
+    <select id="findPage" resultType="com.campus.animal.entity.FeedPoint">
+        SELECT <include refid="columns"/> FROM feed_point <include refid="filters"/>
+        ORDER BY point_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+    <select id="countFiltered" resultType="long">
+        SELECT COUNT(*) FROM feed_point <include refid="filters"/>
+    </select>
+    <select id="count" resultType="long">SELECT COUNT(*) FROM feed_point</select>
+    <select id="countByFoodStatus" resultType="long">SELECT COUNT(*) FROM feed_point WHERE food_status = #{value}</select>
+</mapper>
