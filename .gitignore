@@ -1,4 +1,7 @@
 /target/
+/frontend/node_modules/
+/frontend/dist/
+/.runtime/
 /static/uploads/
 /uploads/
 .env

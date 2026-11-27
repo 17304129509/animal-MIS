@@ -3,3 +3,5 @@
 src/main/resources/static/assets/** -text
 *.jpg binary
 *.png binary
+*.jar binary
+*.bat text eol=crlf

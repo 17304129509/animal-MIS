@@ -1,0 +1,240 @@
+import "./FeedPoints.css";
+import {
+  withScope as h,
+  onMounted as T,
+  openBlock as _,
+  createElementBlock as b,
+  createElementVNode as d,
+  createVNode as t,
+  withCtx as l,
+  ref as i,
+  resolveComponent as a,
+  Fragment as M,
+  renderList as A,
+  createBlock as k,
+  toDisplayString as m,
+  createTextVNode as r,
+  unref as D,
+  createCommentVNode as L,
+  ElMessage as R,
+} from "../vendor/vue-runtime.js";
+import { hasRole as E } from "../session.js";
+import { feedPointApi as w } from "../api.js";
+const j = { class: "toolbar" },
+  q = { class: "point-header" },
+  G = { class: "loc" },
+  H = { class: "meta" },
+  J = {
+    __name: "FeedPoints",
+    setup(K) {
+      const g = i([]),
+        f = i(""),
+        S = E("volunteer", "admin"),
+        u = i(!1),
+        y = i(null),
+        c = i("");
+      function C(n) {
+        return { 充足: "success", 不足: "warning", 空缺: "danger" }[n] || "";
+      }
+      async function v() {
+        const n = await w.list({ foodStatus: f.value, page: 1, pageSize: 50 });
+        g.value = n.list;
+      }
+      function x(n) {
+        ((y.value = n), (c.value = n.foodStatus), (u.value = !0));
+      }
+      async function F() {
+        (await w.updateStatus(y.value.pointId, c.value),
+          R.success("物资状态已更新"),
+          (u.value = !1),
+          v());
+      }
+      return (
+        T(v),
+        (n, e) => {
+          const s = a("el-option"),
+            V = a("el-select"),
+            N = a("el-tag"),
+            p = a("el-button"),
+            $ = a("el-space"),
+            z = a("el-card"),
+            B = a("el-col"),
+            I = a("el-row"),
+            P = a("el-dialog");
+          return (
+            _(),
+            b("div", null, [
+              d("div", j, [
+                t(
+                  V,
+                  {
+                    modelValue: f.value,
+                    "onUpdate:modelValue": e[0] || (e[0] = (o) => (f.value = o)),
+                    placeholder: "物资状态",
+                    clearable: "",
+                    style: { width: "140px" },
+                    onChange: v,
+                  },
+                  {
+                    default: l(() => [
+                      t(s, { label: "充足", value: "充足" }),
+                      t(s, { label: "不足", value: "不足" }),
+                      t(s, { label: "空缺", value: "空缺" }),
+                    ]),
+                    _: 1,
+                  },
+                  8,
+                  ["modelValue"],
+                ),
+              ]),
+              t(
+                I,
+                { gutter: 16 },
+                {
+                  default: l(() => [
+                    (_(!0),
+                    b(
+                      M,
+                      null,
+                      A(
+                        g.value,
+                        (o) => (
+                          _(),
+                          k(
+                            B,
+                            { key: o.pointId, span: 8 },
+                            {
+                              default: l(() => [
+                                t(
+                                  z,
+                                  { shadow: "hover" },
+                                  {
+                                    default: l(() => [
+                                      d("div", q, [
+                                        d("h3", null, m(o.pointName), 1),
+                                        t(
+                                          N,
+                                          { type: C(o.foodStatus) },
+                                          { default: l(() => [r(m(o.foodStatus), 1)]), _: 2 },
+                                          1032,
+                                          ["type"],
+                                        ),
+                                      ]),
+                                      d("p", G, m(o.location), 1),
+                                      d("p", H, "更新：" + m(o.updateTime || "-"), 1),
+                                      t(
+                                        $,
+                                        null,
+                                        {
+                                          default: l(() => [
+                                            t(
+                                              p,
+                                              {
+                                                type: "primary",
+                                                size: "small",
+                                                onClick: (U) =>
+                                                  n.$router.push(
+                                                    `/feed-points/${o.pointId}/checkin`,
+                                                  ),
+                                              },
+                                              {
+                                                default: l(() => [
+                                                  ...(e[4] || (e[4] = [r(" 投喂打卡 ", -1)])),
+                                                ]),
+                                                _: 1,
+                                              },
+                                              8,
+                                              ["onClick"],
+                                            ),
+                                            D(S)
+                                              ? (_(),
+                                                k(
+                                                  p,
+                                                  { key: 0, size: "small", onClick: (U) => x(o) },
+                                                  {
+                                                    default: l(() => [
+                                                      ...(e[5] || (e[5] = [r("更新物资", -1)])),
+                                                    ]),
+                                                    _: 1,
+                                                  },
+                                                  8,
+                                                  ["onClick"],
+                                                ))
+                                              : L("", !0),
+                                          ]),
+                                          _: 2,
+                                        },
+                                        1024,
+                                      ),
+                                    ]),
+                                    _: 2,
+                                  },
+                                  1024,
+                                ),
+                              ]),
+                              _: 2,
+                            },
+                            1024,
+                          )
+                        ),
+                      ),
+                      128,
+                    )),
+                  ]),
+                  _: 1,
+                },
+              ),
+              t(
+                P,
+                {
+                  modelValue: u.value,
+                  "onUpdate:modelValue": e[3] || (e[3] = (o) => (u.value = o)),
+                  title: "更新物资状态",
+                  width: "400px",
+                },
+                {
+                  footer: l(() => [
+                    t(
+                      p,
+                      { onClick: e[2] || (e[2] = (o) => (u.value = !1)) },
+                      { default: l(() => [...(e[6] || (e[6] = [r("取消", -1)]))]), _: 1 },
+                    ),
+                    t(
+                      p,
+                      { type: "primary", onClick: F },
+                      { default: l(() => [...(e[7] || (e[7] = [r("确定", -1)]))]), _: 1 },
+                    ),
+                  ]),
+                  default: l(() => [
+                    t(
+                      V,
+                      {
+                        modelValue: c.value,
+                        "onUpdate:modelValue": e[1] || (e[1] = (o) => (c.value = o)),
+                        style: { width: "100%" },
+                      },
+                      {
+                        default: l(() => [
+                          t(s, { label: "充足", value: "充足" }),
+                          t(s, { label: "不足", value: "不足" }),
+                          t(s, { label: "空缺", value: "空缺" }),
+                        ]),
+                        _: 1,
+                      },
+                      8,
+                      ["modelValue"],
+                    ),
+                  ]),
+                  _: 1,
+                },
+                8,
+                ["modelValue"],
+              ),
+            ])
+          );
+        }
+      );
+    },
+  },
+  W = h(J, [["__scopeId", "data-v-1deba2da"]]);
+export { W as default };

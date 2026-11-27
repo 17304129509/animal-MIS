@@ -6,7 +6,25 @@
 
 Java 17、Spring Boot、Spring MVC、MyBatis、MySQL 8、JWT。两个页面由同一个 Spring Boot 应用提供，默认使用原来的 8081 用户端和 8082 管理端。
 
-## 本地运行
+## 下载 ZIP 后启动
+
+在 Windows 10/11 x64 上，从 GitHub 选择 **Code → Download ZIP**，解压整个文件夹后双击 `启动.bat`。启动程序使用仓库自带的 JAR，自动准备本地演示数据库，并打开用户端 `http://127.0.0.1:8081/` 和管理端 `http://127.0.0.1:8082/`。
+
+- 如果 PATH 中有 Java 17+ 和 MySQL 8，启动程序会复用它们的可执行文件。缺少运行时会在首次启动时从供应商下载并校验，MySQL 下载约 248 MB。双击运行无需 Maven、Node.js 或手动执行 SQL。
+- 演示数据库使用本地 `33067` 端口，数据和上传文件保存在解压目录的 `.runtime` 中。保留该目录即可在下次启动时继续使用数据。结束演示请在启动窗口按 Ctrl+C。
+- 演示账号为 `stu001`、`vol001` 和 `admin001`，演示密码均为 `123456`。
+
+## 源码和构建
+
+- `frontend/src/views` 是根据原发布包恢复的可编辑 Vue 页面，使用 Vue 渲染函数。路由、会话、API 请求和样式各有独立文件，`frontend/src/vendor` 保存恢复时使用的第三方运行时。
+- 管理端源码位于 `src/main/resources/static/console`，Java 后端和 MyBatis 映射分别位于 `src/main/java` 和 `src/main/resources/mapper`。
+- 开发时可使用 Node.js 20+ 执行 `npm --prefix frontend ci` 和 `npm --prefix frontend run dev`，Vite 会将 API 请求转发给 8081 上的后端。修改源码后，在 Windows 项目根目录运行下面的命令即可重新生成一键启动使用的 JAR。
+
+```powershell
+powershell.exe -ExecutionPolicy Bypass -File .\scripts\build-package.ps1
+```
+
+## 使用自有 MySQL
 
 准备 JDK 17、Maven 和 MySQL 8。在仓库根目录初始化数据库。以下命令适用于 PowerShell，其他 shell 可以用 MySQL 客户端执行同名 SQL 文件。
 

@@ -1,0 +1,262 @@
+import "./Animals.css";
+import { animalApi as T } from "../api.js";
+import {
+  withScope as D,
+  onMounted as M,
+  openBlock as s,
+  createElementBlock as p,
+  createElementVNode as c,
+  createVNode as t,
+  withCtx as n,
+  unref as P,
+  createBlock as y,
+  createCommentVNode as C,
+  resolveComponent as o,
+  ref as d,
+  reactive as G,
+  Fragment as x,
+  renderList as U,
+  createTextVNode as k,
+  normalizeStyle as H,
+  toDisplayString as r,
+} from "../vendor/vue-runtime.js";
+import { isLoggedIn as q } from "../session.js";
+const J = { class: "toolbar" },
+  K = ["src"],
+  O = { key: 1, class: "cover-emoji" },
+  Q = { class: "loc" },
+  R = {
+    __name: "Animals",
+    setup(W) {
+      const h = ["健康", "受伤", "康复", "已领养"],
+        u = G({ type: "", status: "", location: "" }),
+        m = d([]),
+        _ = d(1),
+        f = d(12),
+        b = d(0),
+        v = d(!1);
+      function z(a) {
+        return { 健康: "success", 受伤: "danger", 康复: "warning", 已领养: "info" }[a] || "";
+      }
+      function N(a) {
+        return { 猫咪: "#fef0ef", 狗狗: "#f0f5ef", 其他: "#f0f0f5" }[a] || "#f5f7fa";
+      }
+      function S(a) {
+        return { 猫咪: "🐱", 狗狗: "🐶", 其他: "🐾" }[a] || "🐾";
+      }
+      async function g() {
+        v.value = !0;
+        try {
+          const a = await T.list({ ...u, page: _.value, pageSize: f.value });
+          ((m.value = a.list), (b.value = a.total));
+        } finally {
+          v.value = !1;
+        }
+      }
+      return (
+        M(g),
+        (a, l) => {
+          const i = o("el-option"),
+            V = o("el-select"),
+            $ = o("el-input"),
+            w = o("el-button"),
+            B = o("el-space"),
+            I = o("el-tag"),
+            A = o("el-card"),
+            j = o("el-col"),
+            E = o("el-row"),
+            F = o("el-empty"),
+            L = o("el-pagination");
+          return (
+            s(),
+            p("div", null, [
+              c("div", J, [
+                t(
+                  B,
+                  { wrap: "" },
+                  {
+                    default: n(() => [
+                      t(
+                        V,
+                        {
+                          modelValue: u.type,
+                          "onUpdate:modelValue": l[0] || (l[0] = (e) => (u.type = e)),
+                          placeholder: "类型",
+                          clearable: "",
+                          style: { width: "120px" },
+                        },
+                        {
+                          default: n(() => [
+                            t(i, { label: "猫咪", value: "猫咪" }),
+                            t(i, { label: "狗狗", value: "狗狗" }),
+                            t(i, { label: "其他", value: "其他" }),
+                          ]),
+                          _: 1,
+                        },
+                        8,
+                        ["modelValue"],
+                      ),
+                      t(
+                        V,
+                        {
+                          modelValue: u.status,
+                          "onUpdate:modelValue": l[1] || (l[1] = (e) => (u.status = e)),
+                          placeholder: "状态",
+                          clearable: "",
+                          style: { width: "120px" },
+                        },
+                        {
+                          default: n(() => [
+                            (s(),
+                            p(
+                              x,
+                              null,
+                              U(h, (e) =>
+                                t(i, { key: e, label: e, value: e }, null, 8, ["label", "value"]),
+                              ),
+                              64,
+                            )),
+                          ]),
+                          _: 1,
+                        },
+                        8,
+                        ["modelValue"],
+                      ),
+                      t(
+                        $,
+                        {
+                          modelValue: u.location,
+                          "onUpdate:modelValue": l[2] || (l[2] = (e) => (u.location = e)),
+                          placeholder: "位置关键词",
+                          clearable: "",
+                          style: { width: "180px" },
+                        },
+                        null,
+                        8,
+                        ["modelValue"],
+                      ),
+                      t(
+                        w,
+                        { type: "primary", onClick: g },
+                        { default: n(() => [...(l[6] || (l[6] = [k("查询", -1)]))]), _: 1 },
+                      ),
+                    ]),
+                    _: 1,
+                  },
+                ),
+                P(q)
+                  ? (s(),
+                    y(
+                      w,
+                      {
+                        key: 0,
+                        type: "success",
+                        onClick: l[3] || (l[3] = (e) => a.$router.push("/animals/new")),
+                      },
+                      { default: n(() => [...(l[7] || (l[7] = [k("新增档案", -1)]))]), _: 1 },
+                    ))
+                  : C("", !0),
+              ]),
+              t(
+                E,
+                { gutter: 16 },
+                {
+                  default: n(() => [
+                    (s(!0),
+                    p(
+                      x,
+                      null,
+                      U(
+                        m.value,
+                        (e) => (
+                          s(),
+                          y(
+                            j,
+                            { key: e.animalId, xs: 24, sm: 12, md: 8, lg: 6 },
+                            {
+                              default: n(() => [
+                                t(
+                                  A,
+                                  {
+                                    shadow: "hover",
+                                    class: "animal-card",
+                                    onClick: (X) => a.$router.push(`/animals/${e.animalId}`),
+                                  },
+                                  {
+                                    default: n(() => [
+                                      c(
+                                        "div",
+                                        {
+                                          class: "cover",
+                                          style: H({ backgroundColor: N(e.type) }),
+                                        },
+                                        [
+                                          e.photoUrl
+                                            ? (s(),
+                                              p(
+                                                "img",
+                                                { key: 0, src: e.photoUrl, alt: "" },
+                                                null,
+                                                8,
+                                                K,
+                                              ))
+                                            : (s(), p("span", O, r(S(e.type)), 1)),
+                                        ],
+                                        4,
+                                      ),
+                                      c("h3", null, r(e.animalName), 1),
+                                      c("p", null, r(e.type) + " · " + r(e.color || "未知毛色"), 1),
+                                      c("p", Q, r(e.location), 1),
+                                      t(
+                                        I,
+                                        { type: z(e.status) },
+                                        { default: n(() => [k(r(e.status), 1)]), _: 2 },
+                                        1032,
+                                        ["type"],
+                                      ),
+                                    ]),
+                                    _: 2,
+                                  },
+                                  1032,
+                                  ["onClick"],
+                                ),
+                              ]),
+                              _: 2,
+                            },
+                            1024,
+                          )
+                        ),
+                      ),
+                      128,
+                    )),
+                  ]),
+                  _: 1,
+                },
+              ),
+              !v.value && m.value.length === 0
+                ? (s(), y(F, { key: 0, description: "暂无动物档案" }))
+                : C("", !0),
+              t(
+                L,
+                {
+                  "current-page": _.value,
+                  "onUpdate:currentPage": l[4] || (l[4] = (e) => (_.value = e)),
+                  "page-size": f.value,
+                  "onUpdate:pageSize": l[5] || (l[5] = (e) => (f.value = e)),
+                  total: b.value,
+                  layout: "total, prev, pager, next",
+                  onChange: g,
+                  class: "pager",
+                },
+                null,
+                8,
+                ["current-page", "page-size", "total"],
+              ),
+            ])
+          );
+        }
+      );
+    },
+  },
+  ee = D(R, [["__scopeId", "data-v-1078a810"]]);
+export { ee as default };
